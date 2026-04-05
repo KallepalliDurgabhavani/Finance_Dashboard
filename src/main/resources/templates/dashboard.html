@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — FinanceOS</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span>FinanceOS</span>
+      <small>Financial Dashboard</small>
+    </div>
+    <div class="nav-section">Main</div>
+    <a th:href="@{/dashboard}" class="nav-link active">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Dashboard
+    </a>
+    <a th:href="@{/records}" class="nav-link">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Records
+    </a>
+    <sec:authorize access="hasAnyRole('ADMIN','ANALYST')">
+      <a th:href="@{/records/new}" class="nav-link">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Add Record
+      </a>
+    </sec:authorize>
+    <sec:authorize access="hasRole('ADMIN')">
+      <div class="nav-section">Admin</div>
+      <a th:href="@{/admin/users}" class="nav-link">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        User Management
+      </a>
+    </sec:authorize>
+    <div class="sidebar-bottom">
+      <div class="user-pill">
+        <div class="user-avatar">
+          <sec:authentication property="name" var="uname"/>
+          <span th:text="${#strings.toUpperCase(#strings.substring(uname,0,1))}">A</span>
+        </div>
+        <div class="user-info">
+          <div class="user-name" th:text="${uname}">admin</div>
+          <div class="user-role">
+            <sec:authorize access="hasRole('ADMIN')">Admin</sec:authorize>
+            <sec:authorize access="hasRole('ANALYST')">Analyst</sec:authorize>
+            <sec:authorize access="hasRole('VIEWER')">Viewer</sec:authorize>
+          </div>
+        </div>
+        <form th:action="@{/logout}" method="post">
+          <button type="submit" class="logout-btn" title="Sign out">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Financial overview and summary</div>
+      </div>
+      <sec:authorize access="hasAnyRole('ADMIN','ANALYST')">
+        <a th:href="@{/records/new}" class="btn btn-primary">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Add Record
+        </a>
+      </sec:authorize>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card income">
+        <div class="stat-icon">
+          <svg fill="currentColor" viewBox="0 0 24 24" style="width:24px;height:24px;color:white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5h-2v-2h2v2zm0-4h-2V7h2v5.5z"/></svg>
+        </div>
+        <div class="stat-label">Total Income</div>
+        <div class="stat-value" th:text="'₹ ' + ${#numbers.formatDecimal(totalIncome,1,'COMMA',2,'POINT')}">₹ 0.00</div>
+      </div>
+      <div class="stat-card expense">
+        <div class="stat-icon">
+          <svg fill="currentColor" viewBox="0 0 24 24" style="width:24px;height:24px;color:white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5h-2v-2h2v2zm0-4h-2V7h2v5.5z"/></svg>
+        </div>
+        <div class="stat-label">Total Expenses</div>
+        <div class="stat-value" th:text="'₹ ' + ${#numbers.formatDecimal(totalExpenses,1,'COMMA',2,'POINT')}">₹ 0.00</div>
+      </div>
+      <div class="stat-card balance">
+        <div class="stat-icon">
+          <svg fill="currentColor" viewBox="0 0 24 24" style="width:24px;height:24px;color:white"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        </div>
+        <div class="stat-label">Net Balance</div>
+        <div class="stat-value" th:text="'₹ ' + ${#numbers.formatDecimal(netBalance,1,'COMMA',2,'POINT')}">₹ 0.00</div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">Category Breakdown</div>
+        <a th:href="@{/records}" class="btn btn-ghost btn-sm">View all records →</a>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Total Amount</th>
+            <th style="width:200px">Distribution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="entry : ${categoryTotals}">
+            <td>
+              <span style="font-weight:500" th:text="${entry.key}">Category</span>
+            </td>
+            <td>
+              <span style="font-family:'Syne',sans-serif;font-weight:700"
+                    th:text="'₹ ' + ${#numbers.formatDecimal(entry.value,1,'COMMA',2,'POINT')}">₹ 0</span>
+            </td>
+            <td>
+              <div class="category-bar">
+                <div class="category-bar-fill" style="width:60%"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Monthly Trends side by side -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title" style="color:#22c55e">Monthly Income</div>
+        </div>
+        <table>
+          <thead><tr><th>Month</th><th>Amount</th></tr></thead>
+          <tbody>
+            <tr th:each="entry : ${monthlyIncome}">
+              <td th:text="${entry.key}">1</td>
+              <td class="amount-income"
+                  th:text="'₹ ' + ${#numbers.formatDecimal(entry.value,1,'COMMA',2,'POINT')}">₹ 0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title" style="color:#f43f5e">Monthly Expenses</div>
+        </div>
+        <table>
+          <thead><tr><th>Month</th><th>Amount</th></tr></thead>
+          <tbody>
+            <tr th:each="entry : ${monthlyExpense}">
+              <td th:text="${entry.key}">1</td>
+              <td class="amount-expense"
+                  th:text="'₹ ' + ${#numbers.formatDecimal(entry.value,1,'COMMA',2,'POINT')}">₹ 0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+<form th:action="@{/logout}" method="post">
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+  <button type="submit" class="logout-btn">...</button>
+</form>
+  </main>
+</div>
+</body>
+</html>
